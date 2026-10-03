@@ -33,6 +33,7 @@ func executeSession(session config.Session) error {
 		fmt.Println("├── [s] Skip this session")
 		fmt.Println("├── [q] Skip all remaining sessions")
 		fmt.Println("├── [d] Delete the old session and create this one")
+		fmt.Println("├── [r] Attach to existing session")
 		fmt.Println("└── [a] Abort mission")
 		fmt.Print("Answer: ")
 
@@ -62,6 +63,23 @@ func executeSession(session config.Session) error {
 				}
 
 				fmt.Printf("Deleted session %q\n", session.Name)
+
+			case "r":
+				cmd := exec.Command("tmux", "attach-session", "-t", session.Name)
+
+				cmd.Stdin = os.Stdin
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+
+				fmt.Printf("Attaching to session %q...\n", session.Name)
+
+				if err := cmd.Run(); err != nil {
+					return fmt.Errorf(
+						"failed to attach to existing session %q: %w",
+						session.Name,
+						err,
+					)
+				}
 
 			case "a":
 				return ErrAbort
